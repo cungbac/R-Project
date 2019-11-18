@@ -130,6 +130,7 @@ lm
 summary(lm)
 confint(lm)
 ### --- chinh lan 2
+### ---- chinh lan 3
 
 
 
