@@ -129,6 +129,8 @@ lm = lm(Y~ X1 + X2 + X3 + X4, data= H)
 lm 
 summary(lm)
 confint(lm)
+### --- chinh lan 2
+
 
 
 
