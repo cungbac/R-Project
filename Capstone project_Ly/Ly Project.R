@@ -129,7 +129,7 @@ Data_lm = lm(data = Data, formula = Y ~ X1)
 summary(Data_lm)
 
 confint(Data_lm)
-
+## chua chinh 
 
 
 
