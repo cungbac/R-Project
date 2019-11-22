@@ -3,6 +3,7 @@ library(dplyr)
 library(readxl)
 library(summarytools)
 library(labelled)
+library(ggplot2)
 ## phan 1: Lam sach du lieu
 # 1. Import data
 Data = read_xlsx('Data 7_Ly.xlsx')
@@ -19,8 +20,8 @@ table(Data$Dum)
 
 # 3. Missing value:
 summary(Data)
-which(is.na(Data$X2)) # X2 Na row 204
-which(is.na(Data$Y)) # Y Na row 154
+which(is.na(Data$X2)) # X2 Na row 201
+which(is.na(Data$Y)) # Y Na row 151
 which(is.na(Data$X1))
 which(is.na(Data$X3))
 which(is.na(Data$X2))
@@ -125,12 +126,10 @@ cor(Data[, 3:6], method ='pearson')
  ## pearson: danh gia muc do tuong quan tuyen tinh giua 2 bien dinh luong
 
 # Part 4: phan tich hoi quy:
-Data_lm = lm(data = Data, formula = Y ~ X1)
+Data_lm = lm(data = Data, formula = Y ~ X1+X2+X3+X4)
 summary(Data_lm)
 
 confint(Data_lm)
-## chua chinh 
-
 
 
 
