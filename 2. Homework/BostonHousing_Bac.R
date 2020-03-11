@@ -20,14 +20,21 @@ summary(BostonHousing)
 
 BostonHousing %>%
   gather(key,val,-medv) %>%
-  ggplot(aes(x = val,y = medv,col = key)) +
+  ggplot(aes(x = val,y = medv)) +
   geom_point() +
+  geom_smooth(method = 'lm')+
   facet_wrap(~ key)
 
 BostonHousing %>%
   gather(key,val, -chas) %>%
   ggplot(aes(x = val,fill = chas)) +
   geom_bar(stat = 'count',position = 'stack') +
+  facet_wrap(~ key,scales = 'free')
+
+BostonHousing %>%
+  gather(key,val, -chas) %>%
+  ggplot(aes(x = val,fill = chas)) +
+  geom_histogram() +
   facet_wrap(~ key,scales = 'free')
 
 BostonHousing %>%
@@ -88,15 +95,18 @@ summary(lm(medv ~ crim,chas0))
 ctr <- trainControl(method = 'repeatedcv',
                     number = 3,
                     repeats = 5)
-  # Train models: 
+# Train models: 
+## Model Base
   model_base <- train(medv ~ crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat,
                    data = train_data,
                    method = 'lm',
                    trControl = ctr)
+## Model dummy
   model_dummy <- train(medv ~ crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat+chas,
                        data = train_data,
                        method = 'lm',
                        trControl = ctr)
+## Model interaction
   model_interaction <- train(medv ~ crim+chas,
                              data = train_data,
                              method = 'lm',
@@ -107,24 +117,18 @@ ctr <- trainControl(method = 'repeatedcv',
   
 # Explore the results: 6 final models
   model_base$finalModel
+  
   model_dummy$finalModel
+  
   model_interaction$finalModel
 
   model_base$resample
   
-  BostonHousing %>%
-    group_by(chas) %>%
-    summarise(mean = mean(crim),
-              mean_medv = mean(medv))
-  
-  BostonHousing %>%
-    group_by(chas) %>%
-    summarise(mean = mean(age),
-              mean_medv = mean(medv))
-  
-  # Calculate fitted values of 6 final models and add them into dataframe
+# Calculate fitted values of 6 final models and add them into dataframe
   fitted(model_base)
+  
   fitted(model_dummy)
+  
   fitted(model_interaction)
 # Calculate residuals of 6 final models and add them into dataframe
   res_base <- as.data.frame(residuals(model_base$finalModel))
@@ -133,24 +137,31 @@ ctr <- trainControl(method = 'repeatedcv',
   res_dummy <- as.data.frame(residuals(model_dummy$finalModel))
   
   res_interation <- as.data.frame(residuals(model_interaction$finalModel))
-  # Residuals analysis of 6 final models
-  plot(model_base$finalModel)
-  plot(model_dummy$finalModel)
-  plot(model_interaction$finalModel)
+
+# Residuals analysis of 6 final models
+ plot(model_base$finalModel)
+ plot(model_dummy$finalModel)
+ plot(model_interaction$finalModel)
   
   # Compare peformance of 6 final models: 
   ........
-# Predicted value of 6 final models:
+
+  # Predicted value of 6 final models:
   base_prd <- as.data.frame(predict(model_base$finalModel,newdata = test_data))
   class(base_prd)
+  
   evaluate_base <- cbind(base_prd,test_data$crim)
   str(evaluate_base)
+  
   colnames(evaluate_base) <- c('predict','actual')
-  evaluate_base <- evaluate_base %>%
+ 
+   evaluate_base <- evaluate_base %>%
     mutate(res = actual - predict)
   
   sd(evaluate_base$res)
-# Evaluate 6 final models:
+
+  
+  # Evaluate 6 final models:
   
   
   
