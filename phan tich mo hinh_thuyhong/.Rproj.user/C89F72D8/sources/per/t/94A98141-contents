@@ -1,0 +1,264 @@
+library(caret)
+library(tidyverse)
+library(car)
+library(summarytools)
+library(plotly)
+library(broom)
+#data
+data("Prestige") #From package "car"
+str(Prestige)
+#EDA- Exploratory data anylysist
+dfSummary(Prestige)%>% view()
+complete.cases(Prestige)#bo NA
+Prestige[complete.cases(Prestige),] %>% str() #lay T, bo F
+Prestige<-Prestige[complete.cases(Prestige),-5]#tru cot 5
+Prestige %>% dfSummary()%>%
+  view()
+ggplot(Prestige, aes(income, prestige)) +
+  geom_point(size=2)+
+  geom_smooth(method = "lm", se=F, size=2)+ #under fitting: pp nay thuc su khong tot, nhin vao du lieu duong cong tot hon 
+  geom_smooth(method='lm',formula = y ~ poly(x,2), se=F, size=2, colour="red")+
+  geom_smooth(method='lm',formula =y ~ poly(x,10),se=F, size=2, colour="green")#over fitting: dua dl moi vao ktr thi bij sai so so voi dl cu rat lon
+#Simple linear regression
+##Estimation
+summary(Prestige)
+lm_simple<- lm(prestige ~ income, data = Prestige)
+##summary the model
+summary(lm_simple)
+Prestige_fit<-fitted(lm_simple) #tim y_fit: lay du lieu income thay vao hoi quy tinh ra
+prestige=Prestige%>%
+  mutate(Prestige_fit) #C1: lam lau hon
+
+Prestige<-cbind(Prestige,Prestige_fit) #C2: 
+Prestige$y_fit <-Prestige_fit  #C3: dat cot moi la y_fit , truyen du lieu Prestige_fit vao y_fit
+
+residuals=resid(lm_simple) #sai so 
+Prestige=prestige%>%
+  mutate(residuals)
+Prestige=Prestige%>%
+  mutate(resid_check=Prestige$prestige-Prestige$Prestige_fit) %>%
+  mutate(delta=Prestige$residuals-Prestige$resid_check)
+ 
+a=ggplot(Prestige,aes(income, prestige))+
+  geom_point( size=2)+
+  geom_smooth(method="lm",  se=F, size=2, alpha=0.5)+
+  geom_point(aes(income,Prestige_fit), colour="red", size=3)
+
+#------------------------buoi01122019---------------------------#
+#Metric
+##R-squared
+###RMSE
+#chia data thanh 68-30
+#dung base R, dplyr slice
+data("Prestige")
+Prestige<-Prestige[complete.cases(Prestige),-5]
+#step 2: split data into tranning and test set
+set.seed(1)
+nrow(Prestige) #bn dong
+1:nrow(Prestige)
+train_index=sample(1:nrow(Prestige), size=68) #lay ngau nhien 68 trong data tu 1:98
+train=Prestige[train_index,]
+test=Prestige[-train_index,]
+#Step 3: estimate tranning data 
+lm_mode=lm(prestige ~ income, data = train)
+Fitted_lm_mode=fitted(lm_mode)
+train= train %>%
+  mutate(Fitted_lm_mode) %>%
+  mutate(resid=resid(lm_mode))
+RMSE_lm_mode=sd(resid(lm_mode))
+#step 4: summmarise model
+lm_mode
+print(lm_mode)
+summary(lm_mode)
+#Step 5: Evaluate traniing model: danh gia tren tap tranning
+broom::glance(lm_mode)
+#step 6: calculate fitteed and residual  & other values
+Prestige_augment=broom::augment(lm_mode) #tinh fitted, resid, RMSE khong can tinh tay, ra 1 df
+#Step 7: Residuals analysis
+plot(lm_mode) #co them duong hoi quy
+str(Prestige_augment)
+ggplot(Prestige_augment,aes(x=.fitted, y=.resid))+
+  geom_point(size=3) +
+  geom_smooth(method="loess", se=F, colour="red")
+#STEP 8: predict on the test set
+pred_lm_mode=predict(lm_mode,newdata=test) #lay du lieu 30 con lai
+#STEP 9: Evaluate on the test set, ve nha lam
+##Step 3: estimate tranning data 
+lm_mode_test=lm(prestige ~ income, data = test)
+Fitted_lm_mode_test=fitted(lm_mode_test)
+test= test%>%
+  mutate(Fitted_lm_mode_test) %>%
+  mutate(resid=resid(lm_mode_test))
+RMSE_lm_mode_test=sd(resid(lm_mode))
+##step 4: summmarise model
+lm_mode_test
+print(lm_mode_test)
+summary(lm_mode_test)
+##Step 5: Evaluate traniing model: danh gia tren tap test
+broom::glance(lm_mode_test)
+##step 6: calculate fitteed and residual  & other values
+Prestige_augment=broom::augment(lm_mode_test) #tinh fitted, resid, RMSE khong can tinh tay, ra 1 df
+##Step 7: Residuals analysis
+plot(lm_mode_test) #co them duong hoi quy
+str(Prestige_augment)
+ggplot(Prestige_augment,aes(x=.fitted, y=.resid))+
+  geom_point(size=3) +
+  geom_smooth(method="loess", se=F, colour="red")
+
+#################### Cross validation ####################
+library(caret)
+#Step 1
+data("diamonds")
+str(diamonds)
+#step2: data screening
+#step 3: EDA
+"
+1.Descriptive statistics: mean, max, IQR, Sd, 
+2.Visualization
+"
+dfSummary(diamonds)%>%view()
+
+
+#STEP 4: Creat tranning and test set (important)
+set.seed(1)
+train_index = createDataPartition(diamonds$price, p=0.7, list=F) #dung bien phu thuoc lay mau, lay sample(mau) huong vao dau ra , lam bth lay row de truy cap
+                                                         #TRANH Th do, lay mau huong vao dau ra , list=T hoi phuc tap
+train=diamonds[train_index,]
+str(train)
+test=diamonds[-train_index,]
+#STEP 5. train control : tao ra 1 yeu cau, cho dl chay tren do
+control= trainControl(method="repeatedcv",
+                      number=10,
+                      repeats = 5) #method cach ma no chia mau, repeat 10 mau lay lai 5lan: chia dl khac nhau
+                                                     
+control$method
+control$number
+#STEP 6: train the model
+lm_mod=train(price~carat+clarity,
+             data=train,
+             method="lm",
+             trControl=control)#method nay la pp chay hoi quy
+#STEP 7: summary
+lm_mod
+lm_mod$method #kham pha trong lm_mod chua j
+lm_mod$modelInfo
+lm_mod$results
+lm_mod$pred
+lm_mod$call
+lm_mod$finalModel #IMPORTANT  !!!!!!!!!!!!!!!
+lm_mod$trainingData
+lm_mod$resample
+summary(lm_mod)
+broom::glance(lm_mod$finalModel)
+train_augment<- broom::augment(lm_mod$f)
+#STEP 8: Residuals ananlysis
+
+plot(lm_mod$finalModel) #Nul result
+#STEP 9: Predict
+pred_lm_mod <- predict(lm_mod, newdata = test)
+ #STEP10: Evaluate on test set
+postResample(pred_lm_mod,test$price)
+lm_mod$results
+
+#----------------------------buoi22122019------------------------------------#
+#library
+library(caret)
+library(tidyverse)
+library(car)
+library(summarytools)
+library(plotly)
+#Data
+data("Prestige") #From "car"
+complete.cases(Prestige)
+complete.cases(Prestige)#bo NA
+Prestige[complete.cases(Prestige),] %>% str() #lay T, bo F
+ggplot(Prestige, aes(prestige, income))+
+  geom_point()
+
+ggplot(Prestige, aes(income, prestige)) +
+  geom_point(size=2)+
+  geom_smooth(method = "lm", se=F, size=2, colour="red")+ #under fitting: pp nay thuc su khong tot, nhin vao du lieu duong cong tot hon 
+  geom_smooth(method='lm',formula = y ~ poly(x,2), se=F, size=2, colour="blue") +
+  geom_smooth(method='lm',formula = y ~ poly(x,10), se=F, size=2, colour="green") 
+ggplot(Prestige, aes(income, prestige, colour=type))+
+  geom_point(size=2)+
+  geom_smooth(method="lm", se=FALSE, size=2)
+#linear regression using caret
+set.seed(1)
+train_index=createDataPartition(Prestige$prestige, p=0.7, list=F)
+train=Prestige[train_index,]
+test=Prestige[-train_index,]
+#train control : kiem soat
+ctr= trainControl(method="repeatedcv",
+                      number=2 ,
+                      repeats = 5) #method cach ma no chia mau, repeat 10 mau lay lai 5lan: chia dl khac nhau
+
+ctr$method
+ctr$number
+# train the model
+lm=train(prestige~income,
+             data=train,
+             method="lm",
+             trControl=ctr)#method nay la pp chay hoi quy
+##Explore the results
+lm$resample #lay mau co thay the , 2 mau chay 5 lan thanh 10
+lm$finalModel
+summary(lm)
+#Envaluate train model: danh gia chat luong cua train_model
+lm$metric #RMSE 12.25 mang tinh tham khao
+plot(lm$finalModel) #entrer 4 lan ra 4 cai can luu y
+"R^2, RMSE, p-value"
+##Fitted value  
+"prestige=25.16+0.00325*income"
+lm_fit= fitted(lm)
+"ggplot(train,aes())..tu ve y fitted vs incom, y vs x"
+##Predicting 
+lm_pred<- predict(lm, newdata = test) #coi lai
+##STEP10: Evaluate on test set
+postResample(lm_pred,test$prestige) #coi lai , neu RMSE cao hon train , thi k tot , R^2 cao, thi RMSE phai nho 
+
+#-----------------------------02012020--------------------------------#
+library(readxl)
+salary <- read_excel('Salary.xlsx')
+str(salary)
+summary(salary)
+salary$Level=as.factor(salary$Level)
+lm(Salary~Level, salary)
+salary %>%
+  group_by(Level) %>%
+  summarise(mean=mean(Salary))
+lm(Salary~Experience, salary)
+ggplot(salary, aes(Level, Salary, color=Level))+
+  geom_point()+
+  geom_smooth(method = "lm")
+salary=salary %>%
+  mutate(Level.numeric=as.numeric(Level))
+lm(Salary~Level.numeric, salary) #day la cach chay sai,
+salary$Level_1=as.factor(salary$Level_1)
+salary$Level_2=as.factor(salary$Level_2)
+salary$Level_3=as.factor(salary$Level_3)
+lm(Salary~level_3+Level_2 +Level_1, salary)#da cong tuyen hoan hao ra  1
+lm=lm(Salary~Experience+Level, salary) #neu level de numeric, no hieu k la bien gia, nos chya thang tren du lieu do -> vo li
+lm(Salary~Level_2+Level_3, salary)
+lm(Salary~Experience, salary)
+#bien tuong tac
+"ve do thi mo ta moi lien he salry va exp mau la level"
+ggplot(salary, aes(Experience,Salary, color=Level))+
+  geom_point()+
+  geom_smooth(method="lm")#co su bien doi tuong tac giu 2 bien nay lam cho salary thay doi
+summary(lm) #lam sao gan nhan phan loai them, gop chung exp (bao gom nam nu), k tim ra xu huong, nhuw phan ra nam nu
+#vd exp phan ra nam thi exp tang thi salary tanwg, nhuw nu exp tang thi co hoi thnag tien salary giam 
+
+#INTERACTION
+lm(Salary~Experience +Level+Experience:Level, salary) #chuyen ve pt doc
+Gen=salary%>%
+  filter(Level=='GeneralStaff')
+lm(Salary~ Experience, Gen)
+Tech=salary%>%
+  filter(Level=='TechnicalStaff')
+lm(Salary~ Experience,Tech)  
+  
+Mana=salary%>%
+  filter(Level=='Management')
+lm(Salary~ Experience,Mana) 
+

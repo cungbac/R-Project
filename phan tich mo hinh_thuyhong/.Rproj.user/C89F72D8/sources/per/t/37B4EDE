@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1583051359956.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3902263510",
+    "id" : "37B4EDE",
+    "lastKnownWriteTime" : 1583063984,
+    "last_content_update" : 1583063984669,
+    "path" : "E:/DATA SCIENCE/bai tap phan tich mo hinh 20200301/baitap phan tich mo hinh.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "37,17",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

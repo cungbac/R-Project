@@ -1,0 +1,76 @@
+#insstall package
+install.packages("mlbench")
+install.packages("leaps")
+#library
+library(caret)
+library(tidyverse)
+library(mlbench) # To employ BostonHousing data
+library(leaps) # To apply stepwise, backward and forward regression
+# Data
+data(BostonHousing)
+bh<-BostonHousing
+head(BostonHousing)
+str(BostonHousing)
+"medv: la bien muc tieu: gia tri tb cua 1 nhaf o cua chu so huu trong 1000$"
+# Data split: train and test data
+set.seed(1)
+nrow(bh) #bn dong
+train_index1=sample(1:nrow(bh), size=356) #lay ngau nhien 356 trong data tu 1:356
+train_index=createDataPartition(bh$medv, p=0.7, list=F)
+"#dung bien phu thuoc lay mau, lay sample(mau) huong vao dau ra ,
+lam bth lay row de truy cap
+g#TRANH Th do, lay mau huong vao dau ra , list=T hoi phuc tap"
+train=bh[train_index,]
+str(train)
+test=bh[-train_index,]
+# Train control: kiem soat tao ra 1 yeu cau, cho dl chay tren do
+ctr <- trainControl(method="repeatedcv",
+                    number=10,
+                    repeats = 5)
+"method cach ma no chia mau, repeat 10 mau lay lai 5lan: chia dl khac nhau"
+ctr$method
+ctr$number
+# Train models: 
+  model_base <- train(medv~crim,
+                      data=train,
+                      method="lm",
+                      trControl=ctr)#method nay la pp chay hoi quy
+  model_dummy <- 
+  model_interaction <-
+  model_stepwise <-
+  model_backward <-
+  model_forward <-
+# Explore the results: 6 final models
+  lm$resample #lay mau co thay the , 2 mau chay 5 lan thanh 10
+  lm$finalModel
+  summary(lm)
+# Calculate fitted values of 6 final models and add them into dataframe
+
+# Calculate residuals of 6 final models and add them into dataframe
+
+# Residuals analysis of 6 final models
+plot(model_)
+# Compare peformance of 6 final models: 
+
+# Predicted value of 6 final models:
+
+# Evaluate 6 final models:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
