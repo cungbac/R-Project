@@ -31,7 +31,7 @@ ctr$number
                       method="lm",
                       trControl=ctr)
   model_dummy <-lm(medv~chas, BostonHousing) 
-  model_interaction <-lm(medv~rad +chas+crim:chas, BostonHousing)
+  model_interaction <-lm(medv~rad +chas+rad:chas, BostonHousing)
         river=BostonHousing%>%
               filter(chas==1)
         lm(medv~ rad, river)
