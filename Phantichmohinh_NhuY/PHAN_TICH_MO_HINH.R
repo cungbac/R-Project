@@ -64,3 +64,29 @@ step.fit <- fitted(model_stepwise)
 back.fit <- fitted(model_backward)
 for.fit <- fitted(model_forward)
 data.fit <- data.frame(base.fit,dummy.fit,interaction.fit,step.fit,back.fit,for.fit)
+# Calculate residuals of 6 final models and add them into dataframe
+base.resid <- residuals(model_base)
+dummy.resid <- residuals(model_dummy)
+interaction.resid <- residuals(model_interaction)
+step.resid <- residuals(model_stepwise)
+back.resid <- residuals(model_backward)
+for.resid <- residuals(model_forward)
+data.resid <- data.frame(base.resid,dummy.resid,interaction.fit,step.resid,back.resid,for.resid)
+# Residuals analysis of 6 final models
+plot(model_base$finalModel)
+plot(model_dummy$finalModel)
+plot(model_interaction$finalModel)
+plot(model_stepwise$finalModel)
+plot(model_backward$finalModel)
+plot(model_forward$finalModel)
+# Compare peformance of 6 final models
+
+
+
+# Predicted value of 6 final models
+base.pred <- predict(model_base,newdata = test)
+dummy.pred <- predict(model_dummy,newdata = test)
+interaction.pred <- predict(model_interaction,newdata = test)
+step.pred <- predict(model_stepwise,newdata = test)
+back.pred <- predict(model_backward,newdata = test)
+for.pred <- predict(model_forward,newdata = test)
