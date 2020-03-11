@@ -17,14 +17,20 @@ test<- BostonHousing[-train_index,]
 ctr <- trainControl(method = "repeatedcv",number = 2,repeats = 5)
 # Train models
 ##Model base
-model_base = train(medv~chas,
-           data = BostonHousing,
+model_base = train(medv~crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat,
+           data = train,
            method = 'lm',
            trControl = ctr)
 ##Model dummy
-model_dummy = lm(medv~chas,data = train) #dummy la 1 va 0
+model_dummy = train(medv~chas+crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat,
+                    data = train,
+                    method = 'lm',
+                    trControl = ctr) #dummy la 1 va 0
 ##Model Interaction
-model_interaction = lm(medv~chas + lstat + chas:lstat,train)
+model_interaction = train(medv~chas + lstat + chas:lstat,
+                          train,
+                          method = 'lm',
+                          trControl = ctr)
 ##Model Stepwise
 model_stepwise = train(medv~., 
                        data = train,
