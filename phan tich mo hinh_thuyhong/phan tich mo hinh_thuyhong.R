@@ -9,56 +9,71 @@ library(leaps) # To apply stepwise, backward and forward regression
 # Data
 data(BostonHousing)
 head(BostonHousing)
-str(BostonHousing$rad)
-table(BostonHousing$rad)
+str(BostonHousing)
 # Data split: train and test data
 set.seed(1)
-nrow(BostonHousing) #bn dong
+nrow(BostonHousing) 
 train_index=createDataPartition(BostonHousing$medv, p=0.7, list=F)
 train=BostonHousing[train_index,]
 str(train)
 test=BostonHousing[-train_index,]
 # Train control: kiem soat tao ra 1 yeu cau, cho dl chay tren do
 ctr <- trainControl(method="repeatedcv",
-                    number=10,
+                    number=2,
                     repeats = 5)
 
 ctr$method
 ctr$number
 # Train models: 
-  model_base <- train(medv~rad,
-                      data=train,
-                      method="lm",
-                      trControl=ctr)
-  model_dummy <-lm(medv~chas, BostonHousing) 
-  model_interaction <-lm(medv~rad +chas+rad:chas, BostonHousing)
-        river=BostonHousing%>%
-              filter(chas==1)
-        lm(medv~ rad, river)
-         other=BostonHousing%>%
-             filter(chas==0)
-        lm(medv~ rad, other)
+  model_base <- train(medv~crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat, 
+                      data = train, 
+                      method = 'lm', 
+                      trControl = ctr) 
+  
+  model_dummy <- train(medv~chas+crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat,
+                       data = train, 
+                       method = 'lm', 
+                       trControl = ctr) 
+  
+  model_interaction <-train(medv~lstat+chas +lstat:chas, 
+                           data=train, 
+                            method = 'lm', 
+                            trControl = ctr) 
+                     
+        
   model_stepwise <-
   model_backward <-
   model_forward <-
 # Explore the results: 6 final models
-  lm$resample #lay mau co thay the , 2 mau chay 5 lan thanh 10
-  lm$finalModel
-  summary(lm)
+  model_base$results
+  model_base$resample
+  model_base$finalModel 
+  model_dummy$finalModel 
+  model_interaction$finalModel 
+  
 # Calculate fitted values of 6 final models and add them into dataframe
-
+  base_fit<- fitted(model_base) 
+  dummy_fit<- fitted(model_dummy) 
+  interaction_fit <- fitted(model_interaction) 
+  data_fit<- data.frame(base_fit,dummy_fit,interaction_fit)
 # Calculate residuals of 6 final models and add them into dataframe
+  base_resid <- residuals(model_base) 
+  dummy_resid <- residuals(model_dummy) 
+  interaction_resid <- residuals(model_interaction) 
+  data_resid <- data.frame(base_resid,dummy_resid,interaction_fit)
+# Residuals analysis of 6 final models 
+ plot(model_base$finalModel) 
+ plot(model_dummy$finalModel) 
+ plot(model_interaction$finalModel) 
 
-# Residuals analysis of 6 final models
-plot(model_)
-# Compare peformance of 6 final models: 
+ # Compare peformance of 6 final models 
 
-# Predicted value of 6 final models:
+# Predicted value of 6 final models 
+ base_pred <- predict(model_base,newdata = test) 
+ dummy_pred <- predict(model_dummy,newdata = test) 
+ interaction_pred <- predict(model_interaction,newdata = test) 
 
-# Evaluate 6 final models:
-
-
-
+# Evaluate 6 final models
 
 
 
