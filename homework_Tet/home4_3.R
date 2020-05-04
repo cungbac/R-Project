@@ -35,18 +35,50 @@ model_base= train(medv~crim+zn+indus+nox+rm+age+dis+rad+tax+ptratio+b+lstat, dat
                   method= "lm",
                  trControl= ctr)
 
-summary(model_base)
 
 model_dummy=  train(medv~crim+zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+b+lstat, data= train_data,
                     method= "lm",
                     trControl= ctr)
 
-summary(model_dummy)
 
-
-model_interaction=  train(medv~crim+chas, data= train_data,
+model_interaction=  train(medv~rad+chas, data= train_data,
                           method= "lm",
                           trControl= ctr)
+
+# Explore the results: 6 final models
+summary(model_base)
+summary(model_dummy)
 summary(model_interaction)
 
+# Calculate fitted values of 6 final models and add them into dataframe
+base_fit= fitted(model_base)
+dummy_fit= fitted(model_dummy)
+inter_fit= fitted(model_interaction)
 
+fitted_df= data.frame(base_fit, 
+               dummy_fit,
+               inter_fit)
+# Calculate residuals of 6 final models and add them into dataframe
+base_re= resid(model_base)
+dummy_re=resid(model_dummy)
+inter_re= resid(model_interaction)
+
+re_df= data.frame(base_re,
+                  dummy_re,
+                  inter_re)
+# Residuals analysis of 6 final models
+plot(model_base$finalModel)
+plot(model_dummy$finalModel)
+plot(model_interaction$finalModel)
+
+# Compare peformance of 6 final models: 
+## Bieu do cua base va dummy gan nhu the hien tuong duong nhau. Con bieu do cua interaction cos su khac biet tuong doi lon.
+
+# Predicted value of 6 final models:
+predict_base= predict(model_base, newdata = test_data)
+predict_dummy= predict(model_dummy, newdata = test_data)
+predict_inter= predict(model_interaction, newdata = test_data)
+# Evaluate 6 final models:
+postResample(predict_base, test_data$medv)
+postResample(predict_dummy, test_data$medv)
+postResample(predict_inter, test_data$medv)
