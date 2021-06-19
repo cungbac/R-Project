@@ -1,4 +1,6 @@
-## Welcome to GitHub Pages
+# Welcome to My Sharing
+
+_I would like to share something that I just learned or going to forget_
 
 You can use the [editor on GitHub](https://github.com/cungbac/R-Project/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
